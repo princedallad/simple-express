@@ -1,4 +1,4 @@
-yamlname: CI Pipeline
+name: CI Pipeline
 on: [pull_request, push]
 jobs:
   test:

@@ -1,15 +1,46 @@
-name: CI Pipeline
-on: [pull_request, push]
+name: CI + Local CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
+  # --------------------------
+  # 🧪 Continuous Integration
+  # --------------------------
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node.js  # Or Python: uses: actions/setup-python@v5 with: python-version: '3.12'
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
+
       - name: Install dependencies
         run: npm install
+
       - name: Run tests
         run: npm test
+
+  # --------------------------
+  # 🚀 Continuous Deployment (Local)
+  # --------------------------
+  deploy-local:
+    # Make sure CD runs *after* CI passes
+    needs: test
+    # IMPORTANT: change to 'self-hosted' if you plan to deploy locally on your own PC
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build and Run Locally
+        run: |
+          docker build -t simple-express-ci-cd:latest .
+          docker stop simpleapp || true
+          docker rm simpleapp || true
+          docker run -d -p 3001:3000 --name simpleapp simple-express-ci-cd:latest

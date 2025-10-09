@@ -45,3 +45,14 @@ jobs:
           docker stop simpleapp || true
           docker rm simpleapp || true
           docker run -d -p 3001:3000 --name simpleapp simple-express-ci-cd:latest
+
+  cleanup:
+    runs-on: self-hosted
+    needs: deploy
+    if: always()
+    steps:
+      - name: Cleanup workspace
+        run: |
+          echo "Cleaning up runner workspace..."
+          cd ~/actions-runner/_work
+          rm -rf *
